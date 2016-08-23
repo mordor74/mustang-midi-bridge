@@ -9,7 +9,7 @@ CPPFLAGS += -MP -MMD $(INCDIRS)
 
 LDLIBS = -lrtmidi -lusb-1.0 -lpthread
 
-BIN = mustang_midi
+BIN = mustangr
 
 opt: CXXFLAGS += -O3 -DNDEBUG
 opt: $(BIN)
