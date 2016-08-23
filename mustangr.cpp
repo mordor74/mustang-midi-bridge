@@ -187,6 +187,11 @@ rc = mustang.tunerMode( 64 );
   if ( argv[1]=='tuneroff') {
 rc = mustang.tunerMode( 0 );
   }
+  if ( argv[1]=='change') {
+rc = mustang.patchChange( arg[2] );
+  }
+  fprintf( stderr, preset_names[curr_preset_idx]);
+  
 usage();
 
   // Block and wait for signal 
