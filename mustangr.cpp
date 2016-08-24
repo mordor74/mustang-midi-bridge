@@ -10,114 +10,114 @@ static Mustang mustang;
 
 static int channel;
 
-// viene richiamata quando riceve un messaggio dal midi. l'azione sta qui!
-void message_action( double deltatime, std::vector< unsigned char > *message, void *userData ) {
-#if 0
+// viene richiamata quando riceve un messaggio dal midi. l'azione sta qui! (ma è inutile!)
+//void message_action( double deltatime, std::vector< unsigned char > *message, void *userData ) {
+//#if 0
   //nBytes dimensione del messaggio
-  unsigned int nBytes = message->size();
+//  unsigned int nBytes = message->size();
   // se il messaggio è 2 byte, minimo 2 carartteri per il primo più secondo 
-  if      ( nBytes == 2 ) fprintf( stdout, "%02x %d\n", (int)message->at(0), (int)message->at(1) );
+//  if      ( nBytes == 2 ) fprintf( stdout, "%02x %d\n", (int)message->at(0), (int)message->at(1) );
   // se il messaggio è 3 byte, minimo 2 carartteri per il primo più secondo e terzo
-  else if ( nBytes == 3 ) fprintf( stdout, "%02x %d %d\n", (int)message->at(0), (int)message->at(1), (int)message->at(2) );
-#endif
+//  else if ( nBytes == 3 ) fprintf( stdout, "%02x %d %d\n", (int)message->at(0), (int)message->at(1), (int)message->at(2) );
+//#endif
 
   // Is this for us?
   // verifica il canale del messaggio (riceve solo quelli del canale impostato!) (inutile)
-  int msg_channel = (*message)[0] & 0x0f;
-  if ( msg_channel != channel ) return;
+//  int msg_channel = (*message)[0] & 0x0f;
+//  if ( msg_channel != channel ) return;
   // verifica il tipo di messaggio
-  int msg_type = (*message)[0] & 0xf0;
+//  int msg_type = (*message)[0] & 0xf0;
 
-  switch ( msg_type ) {
+//  switch ( msg_type ) {
 
-  case 0xc0: {
+//  case 0xc0: {
     // Program change
-    int bank = (int)(*message)[1];
-    int rc = mustang.patchChange( bank );
-    if ( rc ) {
-      fprintf( stderr, "Error: PC#%d failed. RC = %d\n", bank, rc );
-    }
-  }
-  break;
+//    int bank = (int)(*message)[1];
+//    int rc = mustang.patchChange( bank );
+//    if ( rc ) {
+//      fprintf( stderr, "Error: PC#%d failed. RC = %d\n", bank, rc );
+//    }
+//  }
+//  break;
     
-  case 0xb0: {
+//  case 0xb0: {
     // Control change
-    int rc = 0;
-    int cc = (*message)[1];
-    int value = (*message)[2];
+//    int rc = 0;
+//    int cc = (*message)[1];
+//    int value = (*message)[2];
     
     // Tuner toggle
-    if ( cc == 20 ) {
-      rc = mustang.tunerMode( value );
-    }
+//    if ( cc == 20 ) {
+//      int rc = mustang.tunerMode( value );
+//    }
     // All EFX toggle
-    else if ( cc == 22 ) {
-      rc = mustang.effectToggle( 23, value );
-      if ( rc == 0 ) {
-        rc = mustang.effectToggle( 24, value );
-        if ( rc == 0 ) {
-          rc = mustang.effectToggle( 25, value );
-          if ( rc == 0 ) {
-            rc = mustang.effectToggle( 26, value );
-          }
-        }
-      }
-    }
+//    else if ( cc == 22 ) {
+//      rc = mustang.effectToggle( 23, value );
+//      if ( rc == 0 ) {
+//        rc = mustang.effectToggle( 24, value );
+//        if ( rc == 0 ) {
+//          rc = mustang.effectToggle( 25, value );
+//          if ( rc == 0 ) {
+//            rc = mustang.effectToggle( 26, value );
+//          }
+//        }
+//      }
+//    }
     // Effects on/off
-    else if ( cc >= 23 && cc <= 26 ) {
-      rc = mustang.effectToggle( cc, value );
-    }
+//    else if ( cc >= 23 && cc <= 26 ) {
+//      rc = mustang.effectToggle( cc, value );
+//    }
     // Set stomp model
-    else if ( cc == 28 ) {
-      rc = mustang.setStomp( value );
-    }
-    // Stomp CC handler
-    else if ( cc >= 29 && cc <= 33 ) {
-      rc = mustang.stompControl( cc, value );
-    }
+//    else if ( cc == 28 ) {
+//      rc = mustang.setStomp( value );
+//    }
+//    // Stomp CC handler
+//    else if ( cc >= 29 && cc <= 33 ) {
+//      rc = mustang.stompControl( cc, value );
+//    }
     // Set mod model
-    else if ( cc == 38 ) {
-      rc = mustang.setMod( value );
-    }
-    // Mod CC handler
-    else if ( cc >= 39 && cc <= 43 ) {
-      rc = mustang.modControl( cc, value );
-    }
+//    else if ( cc == 38 ) {
+//      rc = mustang.setMod( value );
+//    }
+//    // Mod CC handler
+//    else if ( cc >= 39 && cc <= 43 ) {
+//      rc = mustang.modControl( cc, value );
+//    }
     // Set delay model
-    else if ( cc == 48 ) {
-      rc = mustang.setDelay( value );
-    }
+//    else if ( cc == 48 ) {
+//      rc = mustang.setDelay( value );
+//    }
     // Delay CC handler
-    else if ( cc >= 49 && cc <= 54 ) {
-      rc = mustang.delayControl( cc, value );
-    }
+//    else if ( cc >= 49 && cc <= 54 ) {
+//      rc = mustang.delayControl( cc, value );
+//    }
     // Set reverb model
-    else if ( cc == 58 ) {
-      rc = mustang.setReverb( value );
-    }
+//    else if ( cc == 58 ) {
+//      rc = mustang.setReverb( value );
+//    }
     // Reverb CC handler
-    else if ( cc >= 59 && cc <= 63 ) {
-      rc = mustang.reverbControl( cc, value );
-    }
+//    else if ( cc >= 59 && cc <= 63 ) {
+//      rc = mustang.reverbControl( cc, value );
+//    }
     // Set amp model
-    else if ( cc == 68 ) {
-      rc = mustang.setAmp( value );
-    }
+//    else if ( cc == 68 ) {
+//      rc = mustang.setAmp( value );
+//    }
     // Amp CC Handler
-    else if ( cc >= 69 && cc <= 79 ) {
-      rc = mustang.ampControl( cc, value );
-    }
-    if ( rc ) {
-      fprintf( stderr, "Error: CC#%d failed. RC = %d\n", cc, rc );
-    }
-  }
-  break;
+//    else if ( cc >= 69 && cc <= 79 ) {
+//      rc = mustang.ampControl( cc, value );
+//    }
+//    if ( rc ) {
+//      fprintf( stderr, "Error: CC#%d failed. RC = %d\n", cc, rc );
+//    }
+//  }
+//  break;
 
-  default:
-    break;
-  }
-
-}
+//  default:
+//    break;
+//  }
+//
+//}
 
 
 void usage() {
@@ -181,16 +181,19 @@ int main( int argc, const char **argv ) {
     fprintf( stderr, "Thread setup and init failed\n" );
     exit( 1 );
   }
-  if ( argv[1]=='tuneron') {
-rc = mustang.tunerMode( 64 );
+//  char cmdstring[1] = "t";
+  if ( strcmp(argv[1],"t") == 0 ) {
+	int rc = mustang.tunerMode( 64 );
   }
-  if ( argv[1]=='tuneroff') {
-rc = mustang.tunerMode( 0 );
+//  char cmdstring[1] = "u";
+  if ( strcmp(argv[1],"u") == 0 ) {
+	int rc = mustang.tunerMode( 0 );
   }
-  if ( argv[1]=='change') {
-rc = mustang.patchChange( arg[2] );
+//  char cmdstring[] = "c"
+  if ( strcmp(argv[1],"c") == 0 ) {
+	int rc = mustang.patchChange( atoi(argv[2]) );
   }
-  fprintf( stderr, preset_names[curr_preset_idx]);
+//  fprintf( stderr, preset_names[curr_preset_idx]);
   
 usage();
 
