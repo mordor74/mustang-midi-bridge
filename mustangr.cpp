@@ -9,6 +9,8 @@
 static Mustang mustang;
 
 static int channel;
+int cmdflg;
+char g_p_names[100][33];
 
 // viene richiamata quando riceve un messaggio dal midi. l'azione sta qui! (ma è inutile!)
 //void message_action( double deltatime, std::vector< unsigned char > *message, void *userData ) {
@@ -133,7 +135,8 @@ void usage() {
 
 // controlla il numero di argomenti e eventualmente mostra l help
 int main( int argc, const char **argv ) {
-  if ( argc < 1 ) usage();
+	cmdflg = 0 ;
+  if ( argc < 2 ) usage();
 // dichiara il midi in (inutile)
 // RtMidiIn input_handler;
 // dichiara endptr puntatore agli argomenti (inutile?)
@@ -181,24 +184,42 @@ int main( int argc, const char **argv ) {
     fprintf( stderr, "Thread setup and init failed\n" );
     exit( 1 );
   }
-//  char cmdstring[1] = "t";
+    fprintf( stderr, "Mustang Raider 0.2\n" );
   if ( strcmp(argv[1],"t") == 0 ) {
-	int rc = mustang.tunerMode( 64 );
+    int tuneron = 64;
+    int rc = mustang.tunerMode( tuneron );
+    fprintf( stderr, "TUNER ON\n" );
+    cmdflg = 1 ;
   }
-//  char cmdstring[1] = "u";
+  //fprintf( stderr, "t for tuner ON\n" );
   if ( strcmp(argv[1],"u") == 0 ) {
-	int rc = mustang.tunerMode( 0 );
+	int tuneroff = 0;
+        int rc = mustang.tunerMode( tuneroff );
+	fprintf( stderr, "TUNER OFF\n" );
+	cmdflg = 1 ;
   }
-//  char cmdstring[] = "c"
   if ( strcmp(argv[1],"c") == 0 ) {
-	int rc = mustang.patchChange( atoi(argv[2]) );
+	fprintf( stderr, "PATCH " );
+        fprintf( stderr, argv[2]);
+         fprintf( stderr, "\n" );
+        int rc = mustang.patchChange( atoi(argv[2]) );
+	fprintf( stderr, "SELECTED: " );
+	fprintf( stderr, "%d", mustang.curpreset());
+	fprintf( stderr, "\n%s", g_p_names[mustang.curpreset()]);
+	fprintf( stderr,"\n");
+	cmdflg = 1 ;
   }
-//  fprintf( stderr, preset_names[curr_preset_idx]);
   
+  if ( strcmp(argv[1],"d") == 0 ) {
+        pause();
+	cmdflg = 1 ;
+  }
+if ( cmdflg == 0) {
+ fprintf( stderr, "No argoument!\n" );
 usage();
-
+}
   // Block and wait for signal 
-  pause();
+//  pause();
 
   if ( 0 != mustang.commShutdown() ) {
     fprintf( stderr, "Thread shutdown failed\n" );

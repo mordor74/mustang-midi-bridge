@@ -127,11 +127,16 @@ Mustang::handleInput( void ) {
 
           strncpy( preset_names[idx], (const char *)read_buf+16, 32 );
           preset_names[idx][32] = '\0';
+          fprintf( stderr,preset_names[idx]);
+	  fprintf( stderr,"\n");
+          strncpy( g_p_names[idx],preset_names[idx],32);
           // Always take the most recent one as the current preset. This
           // will properly account for its appearance at the end of a complete
           // parm dump or when manual patch change occurs.
           curr_preset_idx = idx;
-
+          fprintf( stderr,"Current preset: ");
+          fprintf( stderr,"%d",curr_preset_idx);
+          fprintf( stderr,"\n");
           pthread_mutex_unlock( &preset_names_sync.lock );
           break;
         }
@@ -1252,7 +1257,8 @@ Mustang::patchChange( int patch ) {
 
   pc_ack_sync.value = false;
   int rc = sendCmd( buffer );
-  while ( rc==0 && ! pc_ack_sync.value ) pthread_cond_wait( &pc_ack_sync.cond, &pc_ack_sync.lock );
+  //disabilitato per modalità comando
+  //while ( rc==0 && ! pc_ack_sync.value ) pthread_cond_wait( &pc_ack_sync.cond, &pc_ack_sync.lock );
 
   pthread_mutex_unlock( &pc_ack_sync.lock );
 
@@ -1341,3 +1347,12 @@ Mustang::tunerMode( int value ) {
 
   return 0;
 }
+
+int Mustang::curpreset() {
+  return curr_preset_idx;
+}
+
+//std::string presetname ( int value ) {
+  // std::string resname = mustang.preset_names[value];
+//  return "resname";  
+//} 

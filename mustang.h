@@ -8,11 +8,14 @@
 #include <libusb-1.0/libusb.h>
 #include <pthread.h>
 #include "constants.h"
+#include <string>
 
 #define USB_IN  0x81
 #define USB_OUT 0x01
 
 #define USB_TIMEOUT_MS 500
+
+extern char g_p_names[100][33];
 
 class AmpCC;
 class ReverbCC;
@@ -157,6 +160,10 @@ public:
   int patchChange( int );
 
   int effectToggle( int cc, int value );
+
+  int curpreset( void );
+
+  std::string presetname ( int value );
 };
 
 
