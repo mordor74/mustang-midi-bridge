@@ -99,10 +99,10 @@ Mustang::handleInput( void ) {
     if ( total_count!=64 ) continue;
     total_count = 0;
 
-#ifdef DEBUG
+//#ifdef DEBUG
     for ( int i=0; i<64; i++ ) fprintf( stderr, "%02x ", read_buf[i] );
     fprintf( stderr, "\n" );
-#endif
+//#endif
 
     if ( 0==memcmp(read_buf,state_prefix,2) ) {
       // Only care about amp state messages, and not even all of them...
@@ -117,12 +117,15 @@ Mustang::handleInput( void ) {
           pc_ack_sync.value = true;
           pthread_cond_signal( &pc_ack_sync.cond );
           pthread_mutex_unlock( &pc_ack_sync.lock );
+          //myfile << "ACK\n";
+ 	  fprintf( stderr, "ACK\n\n" );  
           break;
         }
         case 0x04:
         {
           // Preset name
-          int idx = read_buf[4];
+          if (read_buf[3]!=0){ break;}
+	  int idx = read_buf[4];
           pthread_mutex_lock( &preset_names_sync.lock );
 
           strncpy( preset_names[idx], (const char *)read_buf+16, 32 );
@@ -138,6 +141,7 @@ Mustang::handleInput( void ) {
           fprintf( stderr,"%d",curr_preset_idx);
           fprintf( stderr,"\n");
           pthread_mutex_unlock( &preset_names_sync.lock );
+          fprintf( stderr,"SYNC OK\n");
           break;
         }
         case 0x05:
@@ -303,7 +307,7 @@ Mustang::initialize( void ) {
   if ( init_value < 0 ) {
     // No amp found
     libusb_exit( NULL );
-    fprintf( stderr, "S - No Mustang USB device found\n" );
+    fprintf( stderr, "No Mustang USB device found\n" );
     return -1;
   }
 
@@ -535,34 +539,52 @@ Mustang::updateAmpObj( const unsigned char *data ) {
        match16(f65_twin_id,model) ||
        match16(s60s_thrift_id,model) ) {
     new_amp = new AmpCC( this, model, 0 );
+    if (match16(f57_deluxe_id,model)) { fprintf (stderr, "FENDER 57 DELUXE\n");};
+    if (match16(f57_champ_id,model)) { fprintf (stderr, "FENDER 57 CHAMP\n");};
+    if (match16(f65_deluxe_id,model)) { fprintf (stderr, "FENDER 65 DELUXE\n");};
+    if (match16(f65_princeton_id,model)) { fprintf (stderr, "FENDER 57 PRINCETON\n");};
+    if (match16(f65_twin_id,model)) { fprintf (stderr, "FENDER 65 TWIN\n");};
+    if (match16(s60s_thrift_id,model)) { fprintf (stderr, "S60\n");};
   }
   else if ( match16(f59_bassman_id,model) ||
             match16(brit_70s_id,model) ) {
     new_amp = new AmpCC1( this, model, 0 );
+    if (match16(f59_bassman_id,model)) { fprintf (stderr, "FENDER 59 BASSMAN\n");};
+    if (match16(brit_70s_id,model)) { fprintf (stderr, "BRITISH 70\n");};
   }
   else if ( match16(f_supersonic_id,model) ) {
     new_amp = new AmpCC2( this, model, 0 );
+    fprintf (stderr, "FENDER SUPERSONIC\n");
   }
   else if ( match16(brit_60s_id,model) ) {
     new_amp = new AmpCC3( this, model, 0);
+    fprintf (stderr, "BRITISH 60\n");
   }
   else if ( match16(brit_80s_id,model) ||
             match16(us_90s_id,model) ||
             match16(metal_2k_id,model) ||
             match16(brit_watt_id,model) ) {
     new_amp = new AmpCC4( this, model, 0 );
+    if (match16(brit_80s_id,model)) { fprintf (stderr, "BRITISH 80\n");};
+    if (match16(us_90s_id,model)) { fprintf (stderr, "AMERICAN 90\n");};
+    if (match16(metal_2k_id,model)) { fprintf (stderr, "METAL 2K\n");};
+    if (match16(brit_watt_id,model)) { fprintf (stderr, "WATT\n");};
   }
   else if ( match16(studio_preamp_id,model) ) {
     new_amp = new AmpCC5( this, model, 0 );
+    fprintf (stderr, "STUDIO PRE\n");
   }
   else if ( match16(brit_color_id,model) ) {
     new_amp = new AmpCC6( this, model, 0 );
+    fprintf (stderr, "COLOR\n");
   }
   else if ( match16(f57_twin_id,model) ) {
     new_amp = new AmpCC7( this, model, 0 );
+    fprintf (stderr, "FENDER 57 TWIN\n");
   }
   else if ( match16(null_amp_id,model) ) {
     new_amp = new NullAmpCC( this, model, 0 );
+    fprintf (stderr, "NULL\n");
   }
   else {
     fprintf( stderr, "W - Amp id {%x,%x} not expected\n", model[0], model[1] );
@@ -679,37 +701,48 @@ Mustang::updateStompObj( const unsigned char *data ) {
   
   if ( match16(overdrive_id,model) ) {
     new_stomp = new OverdriveCC( this, model, slot );
+    fprintf (stderr,"OD\n");
   }
   else if ( match16(wah_id,model) ||
             match16(touch_wah_id,model) ) {
     new_stomp = new WahCC( this, model, slot );
+    fprintf (stderr,"WA\n");
   }
   else if ( match16(fuzz_id,model) ) {
     new_stomp = new FuzzCC( this, model, slot );
+    fprintf (stderr,"FZ\n");
   }
   else if ( match16(fuzz_twah_id,model) ) {
     new_stomp = new FuzzTouchWahCC( this, model, slot );
+    fprintf (stderr,"FW\n");
   }
   else if ( match16(simple_comp_id,model) ) {
     new_stomp = new SimpleCompCC( this, model, slot );
+    fprintf (stderr,"CP\n");
   }
   else if ( match16(comp_id,model) ) {
     new_stomp = new CompCC( this, model, slot );
+    fprintf (stderr,"CP\n");
   }
   else if ( match16(range_boost_id,model) ) {
     new_stomp = new RangerCC( this, model, slot );
+    fprintf (stderr,"BS\n");
   }
   else if ( match16(green_box_id,model) ) {
     new_stomp = new GreenBoxCC( this, model, slot );
+    fprintf (stderr,"GB\n");
   }
   else if ( match16(orange_box_id,model) ) {
     new_stomp = new OrangeBoxCC( this, model, slot );
+    fprintf (stderr,"OB\n");
   }
   else if ( match16(black_box_id,model) ) {
     new_stomp = new BlackBoxCC( this, model, slot );
+    fprintf (stderr,"BB\n");
   }
   else if ( match16(big_fuzz_id,model) ) {
     new_stomp = new BigFuzzCC( this, model, slot );
+    fprintf (stderr,"BF\n");
   }
   else if ( match16(null_stomp_id,model) ) {
     new_stomp = new NullStompCC( this, model, 0 );
@@ -824,36 +857,46 @@ Mustang::updateModObj( const unsigned char *data ) {
   if ( match16(sine_chorus_id,model) ||
        match16(tri_chorus_id,model) ) {
     new_mod = new ChorusCC( this, model, slot );
+     fprintf (stderr,"CH\n");   
   }
   else if ( match16(sine_flange_id,model) ||
             match16(tri_flange_id,model) ) {
     new_mod = new FlangerCC( this, model, slot );
+    fprintf (stderr,"FL\n");
   }
   else if ( match16(vibratone_id,model) ) {
     new_mod = new VibratoneCC( this, model, slot );
+    fprintf (stderr,"VB\n");
   }
   else if ( match16(vint_trem_id,model) ||
             match16(sine_trem_id,model) ) {
     new_mod = new TremCC( this, model, slot );
+    fprintf (stderr,"TR\n");
   }
   else if ( match16(ring_mod_id,model) ) {
     new_mod = new RingModCC( this, model, slot );
+    fprintf (stderr,"RI\n");
   }
   else if ( match16(step_filt_id,model) ) {
     new_mod = new StepFilterCC( this, model, slot );
+    fprintf (stderr,"SF\n");
   }
   else if ( match16(phaser_id,model) ) {
     new_mod = new PhaserCC( this, model, slot );
+    fprintf (stderr,"PH\n");
   }
   else if ( match16(pitch_shift_id,model) ) {
     new_mod = new PitchShifterCC( this, model, slot );
+    fprintf (stderr,"PS\n");
   }
   else if ( match16(m_wah_id,model) ||
             match16(m_touch_wah_id,model) ) {
     new_mod = new ModWahCC( this, model, slot );
+    fprintf (stderr,"MW\n");
   }
   else if ( match16(dia_pitch_id,model) ) {
     new_mod = new DiatonicShiftCC( this, model, slot );
+    fprintf (stderr,"DS\n");
   }
   else if ( match16(null_mod_id,model) ) {
     new_mod = new NullModCC( this, model, 0 );
