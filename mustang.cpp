@@ -74,7 +74,7 @@ Mustang::threadStarter( void *self ) {
 
 void 
 Mustang::handleInput( void ) {
-
+  fprintf(stderr,"HANDLEINPUT\n");
   int rc;
   unsigned char read_buf[64];
   int total_count = 0;
@@ -1296,14 +1296,26 @@ Mustang::patchChange( int patch ) {
 
   ////// Critical Section
   //
-  pthread_mutex_lock( &pc_ack_sync.lock );
+  //pthread_mutex_lock( &pc_ack_sync.lock );
+  pthread_mutex_lock( &parm_read_sync.lock );
+  parm_read_sync.value = false;
 
-  pc_ack_sync.value = false;
+  //pc_ack_sync.value = false;
   int rc = sendCmd( buffer );
+  fprintf( stderr, "DEBUG: Waiting for ack. rc = %d\n",rc );
   //disabilitato per modalità comando
+// Request parm dump
+  pthread_create( &worker, NULL, threadStarter, this );
+  memset( buffer, 0, 64 );
+  buffer[0] = 0xff;
+  buffer[1] = 0xc1;
+  fprintf( stderr, "DEBUG: requesting dump\n" );
+  rc = sendCmd( buffer );
+  fprintf( stderr, "DEBUG: dump requested\n" );
   //while ( rc==0 && ! pc_ack_sync.value ) pthread_cond_wait( &pc_ack_sync.cond, &pc_ack_sync.lock );
-
-  pthread_mutex_unlock( &pc_ack_sync.lock );
+   while ( rc==0 && !parm_read_sync.value ) pthread_cond_wait( &parm_read_sync.cond, &parm_read_sync.lock );
+  //pthread_mutex_unlock( &pc_ack_sync.lock );
+  pthread_mutex_unlock( &parm_read_sync.lock );
 
 #ifdef DEBUG
   fprintf( stderr, "DEBUG: Leaving patch change\n" );

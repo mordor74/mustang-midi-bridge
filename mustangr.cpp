@@ -18,7 +18,7 @@
 #include <sys/time.h>
 #include <termios.h>
 #include <signal.h>
-
+#include <time.h>
 
 #include "mustang.h"
 
@@ -30,6 +30,11 @@ char g_p_names[100][33];
 std::fstream myfile;
 
 //declaration for footswitch input
+struct input_event ev[64];
+char name[256] = "Unknown";
+char *device = "/dev/input/event0";
+
+int fd, rd, value, size = sizeof (struct input_event);
 
 void handler (int sig)
 {
@@ -41,6 +46,31 @@ void perror_exit (char *error)
 {
   perror (error);
   handler (9);
+}
+static void *foot_trd ( void *)
+{
+fprintf (stderr,"Setuping up FS\n");
+while (1){
+           //int rcu = usleep( 200 );
+           if ((rd = read (fd, ev, size * 64)) < size)
+               //perror_exit ("read()");
+               value = ev[0].value;
+               //fprintf( stderr,"L\n");
+               if (value != ' ' && ev[1].value == 1 && ev[1].type == 1){ // Only read the key press event
+                   printf ("Code[%d]\n", (ev[1].code));
+                   int dpreset=mustang.curpreset()-8;
+                   if (dpreset<0) {dpreset=dpreset+24;}
+                   int rc = mustang.patchChange( dpreset );
+                   fprintf( stderr, "SELECTED: " );
+                   fprintf( stderr, "%d", mustang.curpreset());
+                   fprintf( stderr, "\n%s", g_p_names[mustang.curpreset()]);
+                   fprintf( stderr,"\n");
+                   myfile << "SELECTED: ";
+                   myfile << g_p_names[mustang.curpreset()];
+                   myfile << "\n";
+               }
+       }
+    pthread_exit(NULL);
 }
 
 // viene richiamata quando riceve un messaggio dal midi. l'azione sta qui! (ma è inutile!)
@@ -135,7 +165,7 @@ void perror_exit (char *error)
 
 void usage() {
   const char msg[] = 
-    "Mustang Raider 0.3\n"
+    "Mustang Raider 0.9\n"
     "Usage: mustangr t\n"
     "                tuner on\n"
     "       mustangr u\n"
@@ -154,12 +184,12 @@ int main( int argc, const char **argv ) {
   myfile.open ("/var/log/mustangr.log");
   if (myfile.is_open ()) {fprintf(stderr,"logging...\n"); }
   else { fprintf(stderr,"error opening file"); exit(1); }
-  myfile << "Writing this to a file.\n";
-  myfile.close();
-  struct input_event ev[64];
-  int fd, rd, value, size = sizeof (struct input_event);
-  char name[256] = "Unknown";
-  char *device = "/dev/input/event0";
+  //string log_date;
+  time_t rawtime;
+  time (&rawtime);
+  //log_date = ctime(&rawtime);
+  myfile << ctime(&rawtime); //log_date;
+  myfile << " Writing this to a file.\n";
   cmdflg = 0 ;
   if ( argc < 2 ) usage();
 
@@ -201,7 +231,7 @@ int main( int argc, const char **argv ) {
     exit( 1 );
   }
   
-  fprintf( stderr, "Mustang Raider 0.3\n" );
+  fprintf( stderr, "Mustang Raider 0.9\n" );
   
   if ( strcmp(argv[1],"t") == 0 ) {
     int tuneron = 64;
@@ -238,36 +268,18 @@ int main( int argc, const char **argv ) {
         
         //Open Device
         fprintf( stderr, "Open %s",device );
-        fd = open (device, O_RDONLY|O_NONBLOCK;
+        fd = open (device, O_RDONLY|O_NONBLOCK);
         if (fd == -1)
-            printf ("%s is not a vaild device.n", device);
+            printf ("%s is not a vaild device\nn", device);
   
         //Print Device Name
         ioctl (fd, EVIOCGNAME (sizeof (name)), name);
-        printf ("Reading From : %s (%s)n", device, name);
- 
-        while (1){
-           int rcu = usleep( 200 );
-           if ((rd = read (fd, ev, size * 64)) < size)
-               perror_exit ("read()");      
- 
-               value = ev[0].value;
- 
-               if (value != ' ' && ev[1].value == 1 && ev[1].type == 1){ // Only read the key press event
-                   printf ("Code[%d]n", (ev[1].code));
-	           int dpreset=mustang.curpreset()+8;
-                   if (dpreset>23) {dpreset=dpreset-24;}
-                   int rc = mustang.patchChange( dpreset );
-                   fprintf( stderr, "SELECTED: " );
-                   fprintf( stderr, "%d", mustang.curpreset());
-                   fprintf( stderr, "\n%s", g_p_names[mustang.curpreset()]);
-                   fprintf( stderr,"\n");
-	           myfile << "SELECTED: ";
-                   myfile << g_p_names[mustang.curpreset()];
-                   myfile << "\n";
-               } 
-       }
-        pause();
+        printf ("Reading From : %s (%s)\n", device, name);
+        pthread_t fsthread;
+        fprintf (stderr,"Starting\n");
+        int rcf = pthread_create(&fsthread ,NULL,foot_trd,NULL);
+        fprintf (stderr,"Setup OK\n");
+        pause(); 
 	cmdflg = 1 ;
   }
 if ( cmdflg == 0) {
