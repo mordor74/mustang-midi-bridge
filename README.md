@@ -1,10 +1,10 @@
 # mustang-raider
 
-Allow Fender Mustang series guitar amplifiers to be controlled by command line
+Allow Fender Mustang series guitar amplifiers to be controlled by command line and USB footpedals
 
 # Introduction
 
-Mustang-raider is a fork of Mustang-bridge with the midi part stripped down and changed to accept parameters
+Mustang-raider is a fork of Mustang-bridge with the midi part stripped down and changed to accept parameters via command line or work in deamon mode with USB footpedals 
 
 Special thanks to (similar to mustang-bridge project!):
 
@@ -20,13 +20,13 @@ Special thanks to (similar to mustang-bridge project!):
 
  + snhirsch, for the work with mustang-bridge that i barely stole
 
-## For everyone
+# For everyone
 
 Stay tuned for the first application!
 
 # Status
 
- Need hand configurazion, only working command are tuner on and off, program change
+ Need hand configuration, only working command are tuner on and off, program change, work only with one foot USB controller. See below TODO
 
 # Build
 ```
@@ -48,3 +48,20 @@ $ make
 # In case of difficulty
 
 Drop some line on my blog! :)
+
+# TODO
+
+- clean and organize output
+- move preset dumps to a folder
+- dump preset restore
+- single parameter control via command line
+- support for 3 pedal USB (only need to buy one to test, in fact)
+- support for 2 different usb pedal devices ( 1+1 single pedal, 1 single + 1 triple, 2 triple pedal)
+- installation guide (will buy a new raspberry with 3.5 display very soon)
+- support for configuration file
+- fully configurable footswitch behavior via configuration file or command line
+- graphical fronted for a 3.5' display resolution
+- support for preset editing via touch display
+- increase responsivness of preset change
+
+
